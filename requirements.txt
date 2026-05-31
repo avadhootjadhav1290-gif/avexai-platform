@@ -1,0 +1,12 @@
+streamlit
+langchain
+langchain-core
+langchain-groq
+pandas
+plotly
+matplotlib
+pypdf
+firebase-admin
+pyrebase4
+streamlit-authenticator
+python-dotenv
