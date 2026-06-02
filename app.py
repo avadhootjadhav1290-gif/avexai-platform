@@ -1,71 +1,98 @@
 import streamlit as st
+
 from modules.chatbot import chatbot_ui
 from modules.csv_analyzer import csv_analyzer_ui
 from modules.pdf_chat import pdf_chat_ui
 from modules.sql_generator import sql_generator_ui
 from modules.resume_assistant import resume_assistant_ui
 from modules.admin_dashboard import admin_dashboard_ui
+from modules.recent_chats import recent_chats_ui
 
-# ---------------- PAGE CONFIG ----------------
+from modules.login_system import login_page
+from modules.admin_check import is_admin
+
 
 st.set_page_config(
-    page_title="Avex AI Workspace",
+    page_title="AvexAI",
     page_icon="🤖",
     layout="wide"
 )
 
-# ---------------- LOGIN ----------------
+# ---------------- LOGIN CHECK ----------------
 
-password = st.sidebar.text_input(
-    "Enter Access Password",
-    type="password"
-)
+if "user" not in st.session_state and "guest" not in st.session_state:
 
-if password != "Avex123":
-    st.warning("Incorrect Password")
+    login_page()
+
     st.stop()
+
+# ---------------- USER INFO ----------------
+
+user_email = None
+
+if "user" in st.session_state:
+    user_email = st.session_state.user.email
+
+admin_access = False
+
+if user_email:
+    admin_access = is_admin(user_email)
 
 # ---------------- SIDEBAR ----------------
 
-st.sidebar.title("🚀 Avex AI Workspace")
-st.sidebar.caption("Professional AI Platform")
+with st.sidebar:
 
-feature = st.sidebar.radio(
-    "Choose Tool",
-    [
-        "💬 AI Chat",
-        "📊 CSV Analyzer",
+    st.title("🧠 AvexAI")
+
+    st.caption(
+        "Your All-in-One AI Assistant"
+    )
+
+    menu = [
+        "💬 AI Chatbot",
         "📄 PDF Assistant",
+        "📊 CSV Analyzer",
         "🧠 SQL Generator",
         "📝 Resume Assistant",
-        "📈 Admin Dashboard"
+        "🕓 Recent Chats"
     ]
-)
 
-st.sidebar.markdown("---")
-st.sidebar.success("System Online")
+    if admin_access:
+        menu.append(
+            "📈 Admin Dashboard"
+        )
 
-# ---------------- MAIN TITLE ----------------
+    selected = st.radio(
+        "Navigation",
+        menu
+    )
 
-st.title("🤖 Avex AI Workspace")
-st.caption("Professional AI Platform")
+# ---------------- MAIN ----------------
 
-# ---------------- ROUTING ----------------
-
-if feature == "💬 AI Chat":
+if selected == "💬 AI Chatbot":
     chatbot_ui()
 
-elif feature == "📊 CSV Analyzer":
-    csv_analyzer_ui()
-
-elif feature == "📄 PDF Assistant":
+elif selected == "📄 PDF Assistant":
     pdf_chat_ui()
 
-elif feature == "🧠 SQL Generator":
+elif selected == "📊 CSV Analyzer":
+    csv_analyzer_ui()
+
+elif selected == "🧠 SQL Generator":
     sql_generator_ui()
 
-elif feature == "📝 Resume Assistant":
+elif selected == "📝 Resume Assistant":
     resume_assistant_ui()
 
-elif feature == "📈 Admin Dashboard":
-    admin_dashboard_ui()
+elif selected == "🕓 Recent Chats":
+    recent_chats_ui()
+
+elif selected == "📈 Admin Dashboard":
+
+    if admin_access:
+        admin_dashboard_ui()
+
+    else:
+        st.error(
+            "Unauthorized Access"
+        )
