@@ -7,16 +7,32 @@ from db import supabase
 def signup(email, password):
 
     try:
-        supabase.auth.sign_up(
+
+        result = supabase.auth.sign_up(
             {
                 "email": email,
                 "password": password
             }
         )
 
-        st.success("Account created successfully!")
+        if result.user:
+
+            supabase.table(
+                "users"
+            ).insert(
+                {
+                    "id": result.user.id,
+                    "email": email,
+                    "role": "user"
+                }
+            ).execute()
+
+        st.success(
+            "Account created successfully!"
+        )
 
     except Exception as e:
+
         st.error(str(e))
 
 
@@ -38,6 +54,28 @@ def login(email, password):
         st.rerun()
 
     except Exception as e:
+
+        st.error(str(e))
+
+
+def reset_password(email):
+
+    if not email.strip():
+
+        st.error("Please enter your email address.")
+
+        return
+
+    try:
+
+        supabase.auth.reset_password_email(email)
+
+        st.success(
+            "Password reset email has been sent. Please check your inbox."
+        )
+
+    except Exception as e:
+
         st.error(str(e))
 
 
@@ -87,3 +125,7 @@ def login_page():
         if st.button("Login"):
 
             login(email, password)
+
+        if st.button("Forgot Password?"):
+
+            reset_password(email)
